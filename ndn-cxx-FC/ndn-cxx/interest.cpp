@@ -98,6 +98,9 @@ Interest::wireEncode(EncodingImpl<TAG>& encoder) const
     totalLength += encoder.prependByteArrayBlock(tlv::HopLimit, &*m_hopLimit, 1);
   }
 
+  //Function
+  totalLength += getFunction().wireEncode(encoder);
+
   // InterestLifetime
   if (getInterestLifetime() != DEFAULT_INTEREST_LIFETIME) {
     totalLength += prependNonNegativeIntegerBlock(encoder, tlv::InterestLifetime,
@@ -245,24 +248,32 @@ Interest::wireDecode(const Block& wire)
         lastElement = 6;
         break;
       }
-      case tlv::HopLimit: {
+      case tlv::Function: {
         if (lastElement >= 7) {
+          NDN_THROW(Error("Function element is out of order"));
+        }
+        m_function.wireDecode(*element);
+        lastElement = 7;
+        break;
+      }
+      case tlv::HopLimit: {
+        if (lastElement >= 8) {
           break; // HopLimit is non-critical, ignore out-of-order appearance
         }
         if (element->value_size() != 1) {
           NDN_THROW(Error("HopLimit element is malformed"));
         }
         m_hopLimit = *element->value();
-        lastElement = 7;
+        lastElement = 8;
         break;
       }
       case tlv::ApplicationParameters: {
-        if (lastElement >= 8) {
+        if (lastElement >= 9) {
           break; // ApplicationParameters is non-critical, ignore out-of-order appearance
         }
         BOOST_ASSERT(!hasApplicationParameters());
         m_parameters.push_back(*element);
-        lastElement = 8;
+        lastElement = 9;
         break;
       }
       default: { // unrecognized element
@@ -333,6 +344,23 @@ Interest::matchesInterest(const Interest& other) const
   return getName() == other.getName() &&
          getCanBePrefix() == other.getCanBePrefix() &&
          getMustBeFresh() == other.getMustBeFresh();
+}
+
+void
+Interest::removeHeadFunction() const
+{
+    std::string str = this->getFunction().toUri();
+    if(this->hasFunction()){
+      auto found = str.find("/", 1);
+      if(found != std::string::npos){ //has multiple function headers
+        str.erase(1, found);
+      }
+      else{
+        str.erase(1, str.length()-1); //only one function header
+      }
+    }
+    this->setFunction(Function(str));
+
 }
 
 // ---- field accessors and modifiers ----

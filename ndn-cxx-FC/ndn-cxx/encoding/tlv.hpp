@@ -91,6 +91,7 @@ enum : uint32_t {
   SignatureSeqNum                 = 42,
   LinkDelegation                  = 31,
   LinkPreference                  = 30,
+  Function                        = 32,
 
   NameComponentMin = 1,
   NameComponentMax = 65535,

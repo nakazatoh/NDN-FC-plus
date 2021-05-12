@@ -59,7 +59,7 @@ public:
   doesMatch(const PendingInterest& entry) const
   {
     return (entry.getOrigin() == PendingInterestOrigin::FORWARDER || m_filter.allowsLoopback()) &&
-            m_filter.doesMatch(entry.getInterest()->getName());
+            (m_filter.doesMatch(Name(entry.getInterest()->getFunction().toUri())) || m_filter.doesMatch(entry.getInterest()->getName()));
   }
 
   /**
