@@ -376,9 +376,9 @@ public: // modifiers
    *  @sa NDN Naming Conventions https://named-data.net/doc/tech-memos/naming-conventions.pdf
    */
   Function&
-  appendSegmentOffset(uint64_t offset)
+  appendByteOffset(uint64_t offset)
   {
-    return append(Component::fromSegmentOffset(offset));
+    return append(Component::fromByteOffset(offset));
   }
 
   /** @brief Append a timestamp component
