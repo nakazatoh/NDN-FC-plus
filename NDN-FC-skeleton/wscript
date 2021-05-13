@@ -19,30 +19,30 @@ def configure(conf):
                uselib_store='CONSUMERPRODUCERAPI', global_define=True, mandatory=True)
 
 def build (bld):
-    bld(target='client',
-        features=['cxx', 'cxxprogram'],
-        source='client.cpp',
-        use='NDN_CXX')
+#    bld(target='client',
+#        features=['cxx', 'cxxprogram'],
+#        source='client.cpp',
+#        use='NDN_CXX')
 
-    bld(target='server',
-        features=['cxx', 'cxxprogram'],
-        source='server.cpp',
-        use='NDN_CXX')
+#    bld(target='server',
+#        features=['cxx', 'cxxprogram'],
+#        source='server.cpp',
+#        use='NDN_CXX')
 
-    bld(target='function',
-        features=['cxx', 'cxxprogram'],
-        source='function.cpp',
-        use='NDN_CXX PYTHON CONSUMERPRODUCERAPI')
+#    bld(target='function',
+#        features=['cxx', 'cxxprogram'],
+#        source='function.cpp',
+#        use='NDN_CXX PYTHON CONSUMERPRODUCERAPI')
 
-    bld(target='consumer',
-        features=['cxx', 'cxxprogram'],
-        source='consumer.cpp',
-        use='NDN_CXX PYTHON CONSUMERPRODUCERAPI')
+#    bld(target='consumer',
+#        features=['cxx', 'cxxprogram'],
+#        source='consumer.cpp',
+#        use='NDN_CXX PYTHON CONSUMERPRODUCERAPI')
 
-    bld(target='producer',
-        features=['cxx', 'cxxprogram'],
-        source='producer.cpp',
-        use='NDN_CXX PYTHON CONSUMERPRODUCERAPI')
+#    bld(target='producer',
+#        features=['cxx', 'cxxprogram'],
+#        source='producer.cpp',
+#        use='NDN_CXX PYTHON CONSUMERPRODUCERAPI')
 
     bld(target='sfc_function',
         features=['cxx', 'cxxprogram'],
