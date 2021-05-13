@@ -24,7 +24,7 @@
  */
 
 #include "cs-entry.hpp"
-#include "core/logger.hpp"
+#include "common/logger.hpp"
 
 namespace nfd {
 namespace cs {
