@@ -53,7 +53,7 @@ Cs::insert(const Data& data, bool isUnsolicited)
   if (!m_shouldAdmit || m_policy->getLimit() == 0) {
     return;
   }
-  NFD_LOG_DEBUG("insert " << data.getName());
+  NFD_LOG_DEBUG("insert " << *(data.getNameFunction()));
 
   // recognize CachePolicy
   shared_ptr<lp::CachePolicyTag> tag = data.getTag<lp::CachePolicyTag>();
@@ -66,10 +66,14 @@ Cs::insert(const Data& data, bool isUnsolicited)
 
   const_iterator it;
   bool isNewEntry = false;
+  NFD_LOG_DEBUG("CS-size-before: " << m_table.size());
   std::tie(it, isNewEntry) = m_table.emplace(data.shared_from_this(), isUnsolicited);
+  NFD_LOG_DEBUG("CS-size-after: " << m_table.size());
   Entry& entry = const_cast<Entry&>(*it);
+  NFD_LOG_DEBUG("inserted-data: " << *(entry.getNameFunction()));
 
   entry.updateFreshUntil();
+  NFD_LOG_DEBUG(" isNewEntry2 " << (isNewEntry ? "T" : "F"));
 
   if (!isNewEntry) { // existing entry
     // XXX This doesn't forbid unsolicited Data from refreshing a solicited entry.
@@ -117,7 +121,7 @@ Cs::findImpl(const Interest& interest) const
     return m_table.end();
   }
 
-  const Name& prefix = interest.getName();
+  const Name& prefix = *(interest.getNameFunction());
   auto range = findPrefixRange(prefix);
   auto match = std::find_if(range.first, range.second,
                             [&interest] (const auto& entry) { return entry.canSatisfy(interest); });
@@ -126,7 +130,7 @@ Cs::findImpl(const Interest& interest) const
     NFD_LOG_DEBUG("find " << prefix << " no-match");
     return m_table.end();
   }
-  NFD_LOG_DEBUG("find " << prefix << " matching " << match->getName());
+  NFD_LOG_DEBUG("find " << prefix << " matching " << *(match->getNameFunction()));
   m_policy->beforeUse(match);
   return match;
 }

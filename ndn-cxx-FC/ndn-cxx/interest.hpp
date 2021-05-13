@@ -31,6 +31,7 @@
 #include "ndn-cxx/util/string-helper.hpp"
 #include "ndn-cxx/util/time.hpp"
 
+#include <memory>
 #include <array>
 
 #include <boost/endian/conversion.hpp>
@@ -163,12 +164,18 @@ public: // matching
   bool
   matchesData(const Data& data) const;
 
+  bool
+  matchesDataWFunction(const Data& data) const;
+
   /** @brief Check if this Interest matches @p other
    *
    *  Two Interests match if both have the same Name, CanBePrefix, and MustBeFresh.
    */
   bool
   matchesInterest(const Interest& other) const;
+
+  bool
+  matchesInterestWFunction(const Interest& other) const;
 
   void
   removeHeadFunction() const;
@@ -205,6 +212,9 @@ public: // element access
   {
     return m_function.toUri() != "/" ? true : false;
   }
+
+  unique_ptr<Name>
+  getNameFunction() const;
 
   /** @brief Declare the default CanBePrefix setting of the application.
    *

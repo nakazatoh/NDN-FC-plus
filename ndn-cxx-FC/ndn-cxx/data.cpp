@@ -246,6 +246,26 @@ Data::setName(const Name& name)
   return *this;
 }
 
+unique_ptr<Name> 
+Data::getNameFunction() const
+{
+//  const Name& name = getName();
+  bool isEndWithDigest = m_name.size() > 0 && m_name[-1].isImplicitSha256Digest();
+  const Name& nteName = isEndWithDigest ? m_name.getPrefix(-1) : m_name;
+
+  unique_ptr<Name> name_p {new Name(nteName)};
+  
+  // include FunctionName as a part of lookup name (nakazato)
+  if (hasFunction())
+  {
+    for (auto p = m_function.begin(); p != m_function.end(); ++p)
+    {
+      name_p->append(*p);
+    }
+  }
+  return name_p;
+}
+
 Data&
 Data::setMetaInfo(const MetaInfo& metaInfo)
 {

@@ -24,9 +24,12 @@
  */
 
 #include "cs-entry.hpp"
+#include "core/logger.hpp"
 
 namespace nfd {
 namespace cs {
+
+NFD_LOG_INIT("CSEntry");  
 
 Entry::Entry(shared_ptr<const Data> data, bool isUnsolicited)
   : m_data(std::move(data))
@@ -38,6 +41,7 @@ Entry::Entry(shared_ptr<const Data> data, bool isUnsolicited)
 bool
 Entry::isFresh() const
 {
+  NFD_LOG_DEBUG("freshUntil:" << m_freshUntil << " current:" << time::steady_clock::now());
   return m_freshUntil >= time::steady_clock::now();
 }
 
@@ -50,14 +54,19 @@ Entry::updateFreshUntil()
 bool
 Entry::canSatisfy(const Interest& interest) const
 {
-  if (!interest.matchesData(*m_data)) {
+  NFD_LOG_DEBUG("interest: " << *(interest.getNameFunction()) << " data: " << *(m_data->getNameFunction()));
+  if (!interest.matchesDataWFunction(*m_data)) {
+    NFD_LOG_DEBUG("  match false");
     return false;
   }
+  NFD_LOG_DEBUG("  Name+Function matched");
 
   if (interest.getMustBeFresh() && !this->isFresh()) {
+    NFD_LOG_DEBUG("  must be fresh fail"); 
     return false;
   }
 
+  NFD_LOG_DEBUG("  match true");
   return true;
 }
 

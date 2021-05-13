@@ -43,18 +43,20 @@ std::pair<shared_ptr<Entry>, bool>
 Pit::findOrInsert(const Interest& interest, bool allowInsert)
 {
   // determine which NameTree entry should the PIT entry be attached onto
-  const Name& name = interest.getName();
-  bool hasDigest = name.size() > 0 && name[-1].isImplicitSha256Digest();
-  size_t nteDepth = name.size() - static_cast<int>(hasDigest);
+  // const Name& name = interest.getName();
+  unique_ptr<Name> name_p = interest.getNameFunction();
+  // bool hasDigest = name.size() > 0 && name[-1].isImplicitSha256Digest();
+  // size_t nteDepth = name.size() - static_cast<int>(hasDigest);
+  size_t nteDepth = name_p->size();
   nteDepth = std::min(nteDepth, NameTree::getMaxDepth());
 
   // ensure NameTree entry exists
   name_tree::Entry* nte = nullptr;
   if (allowInsert) {
-    nte = &m_nameTree.lookup(name, nteDepth);
+    nte = &m_nameTree.lookup(*name_p, nteDepth);
   }
   else {
-    nte = m_nameTree.findExactMatch(name, nteDepth);
+    nte = m_nameTree.findExactMatch(*name_p, nteDepth);
     if (nte == nullptr) {
       return {nullptr, true};
     }
@@ -65,7 +67,7 @@ Pit::findOrInsert(const Interest& interest, bool allowInsert)
   auto it = std::find_if(pitEntries.begin(), pitEntries.end(),
     [&interest, nteDepth] (const shared_ptr<Entry>& entry) {
       // NameTree guarantees first nteDepth components are equal
-      return entry->canMatch(interest, nteDepth);
+      return entry->canMatchWFunction(interest, nteDepth);
     });
   if (it != pitEntries.end()) {
     return {*it, false};
@@ -85,7 +87,7 @@ Pit::findOrInsert(const Interest& interest, bool allowInsert)
 DataMatchResult
 Pit::findAllDataMatches(const Data& data) const
 {
-  auto&& ntMatches = m_nameTree.findAllMatches(data.getName(), &nteHasPitEntries);
+  auto&& ntMatches = m_nameTree.findAllMatches(*(data.getNameFunction()), &nteHasPitEntries);
 
   DataMatchResult matches;
   for (const auto& nte : ntMatches) {

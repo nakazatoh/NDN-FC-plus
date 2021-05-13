@@ -48,6 +48,18 @@ Entry::canMatch(const Interest& interest, size_t nEqualNameComps) const
   /// \todo #3162 match ForwardingHint field
 }
 
+bool
+Entry::canMatchWFunction(const Interest& interest, size_t nEqualNameComps) const
+{
+  BOOST_ASSERT(m_interest->getNameFunction()->compare(0, nEqualNameComps,
+                                             *(interest.getNameFunction()), 0, nEqualNameComps) == 0);
+
+  return m_interest->getNameFunction()->compare(nEqualNameComps, Name::npos,
+                                       *(interest.getNameFunction()), nEqualNameComps) == 0 &&
+         m_interest->getSelectors() == interest.getSelectors();
+  /// \todo #3162 match Link field
+}
+
 InRecordCollection::iterator
 Entry::getInRecord(const Face& face)
 {

@@ -152,6 +152,9 @@ public: // Data fields
     return m_function.toUri() != "/" ? true : false;
   }
 
+  unique_ptr<Name>
+  getNameFunction() const;
+
   /** @brief Get MetaInfo
    */
   const MetaInfo&

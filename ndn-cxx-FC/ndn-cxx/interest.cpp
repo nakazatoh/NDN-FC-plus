@@ -339,11 +339,39 @@ Interest::matchesData(const Data& data) const
 }
 
 bool
+Interest::matchesDataWFunction(const Data& data) const
+{
+  if (hasFunction() != data.hasFunction()) {
+    return false;
+  }
+  if (!hasFunction() || (m_function == data.getFunction()))
+  {
+    return matchesData(data);
+  }
+  return false;
+}
+
+bool
 Interest::matchesInterest(const Interest& other) const
 {
   return getName() == other.getName() &&
          getCanBePrefix() == other.getCanBePrefix() &&
          getMustBeFresh() == other.getMustBeFresh();
+}
+
+bool
+Interest::matchesInterestWFunction(const Interest& other) const
+{
+  if (hasFunction() != other.hasFunction())
+  {
+    return false;
+  }
+  if (m_function == other.getFunction())
+  {
+    return matchesInterest(other);
+  }
+  return false;
+
 }
 
 void
@@ -361,6 +389,26 @@ Interest::removeHeadFunction() const
     }
     this->setFunction(Function(str));
 
+}
+
+unique_ptr<Name> 
+Interest::getNameFunction() const
+{
+//  const Name& name = getName();
+  bool isEndWithDigest = m_name.size() > 0 && m_name[-1].isImplicitSha256Digest();
+  const Name& nteName = isEndWithDigest ? m_name.getPrefix(-1) : m_name;
+
+  unique_ptr<Name> name_p {new Name(nteName)};
+  
+  // include FunctionName as a part of lookup name (nakazato)
+  if (hasFunction())
+  {
+    for (auto p = m_function.begin(); p != m_function.end(); ++p)
+    {
+      name_p->append(*p);
+    }
+  }
+  return name_p;
 }
 
 // ---- field accessors and modifiers ----
