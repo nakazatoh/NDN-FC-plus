@@ -56,7 +56,8 @@ Entry::canMatchWFunction(const Interest& interest, size_t nEqualNameComps) const
 
   return m_interest->getNameFunction()->compare(nEqualNameComps, Name::npos,
                                        *(interest.getNameFunction()), nEqualNameComps) == 0 &&
-         m_interest->getSelectors() == interest.getSelectors();
+         m_interest->getCanBePrefix() == interest.getCanBePrefix() &&
+         m_interest->getMustBeFresh() == interest.getMustBeFresh();
   /// \todo #3162 match Link field
 }
 
