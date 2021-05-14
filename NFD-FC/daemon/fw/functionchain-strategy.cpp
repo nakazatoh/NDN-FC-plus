@@ -32,15 +32,19 @@ namespace fw {
 NFD_REGISTER_STRATEGY(FunctionChainStrategy);
 
 FunctionChainStrategy::FunctionChainStrategy(Forwarder& forwarder, const Name& name)
-: Strategy(forwarder),
-  m_forwarder(forwarder)
+  : Strategy(forwarder)
+  , ProcessNackTraits(this)
+  , m_retxSuppression(RETX_SUPPRESSION_INITIAL,
+                      RetxSuppressionExponential::DEFAULT_MULTIPLIER,
+                      RETX_SUPPRESSION_MAX)
+  ,m_forwarder(forwarder)
 {
   ParsedInstanceName parsed = parseInstanceName(name);
   if (!parsed.parameters.empty()) {
-    BOOST_THROW_EXCEPTION(std::invalid_argument("FunctionChainStrategy does not accept parameters"));
+    NDN_THROW(std::invalid_argument("FunctionChainStrategy does not accept parameters"));
   }
   if (parsed.version && *parsed.version != getStrategyName()[-1].toVersion()) {
-    BOOST_THROW_EXCEPTION(std::invalid_argument(
+    NDN_THROW(std::invalid_argument(
       "FunctionChainStrategy does not support version " + to_string(*parsed.version)));
   }
   this->setInstanceName(makeInstanceName(name, getStrategyName()));
@@ -49,28 +53,77 @@ FunctionChainStrategy::FunctionChainStrategy(Forwarder& forwarder, const Name& n
 const Name&
 FunctionChainStrategy::getStrategyName()
 {
-  static Name strategyName("/localhost/nfd/strategy/function-chain/%FD%01");
+  static const auto strategyName = Name("/localhost/nfd/strategy/function-chain").appendVersion(2);
   return strategyName;
 }
 
 void
-FunctionChainStrategy::afterReceiveInterest(const Face& inFace, const Interest& interest,
+FunctionChainStrategy::afterReceiveInterest(const FaceEndpoint& ingress, const Interest& interest,
                                             const shared_ptr<pit::Entry>& pitEntry)
 {
-  /*if (hasPendingOutRecords(*pitEntry)) {
-    // not a new Interest, don't forward
+  RetxSuppressionResult suppression = m_retxSuppression.decidePerPitEntry(*pitEntry);
+  if (suppression == RetxSuppressionResult::SUPPRESS) {
+    NFD_LOG_DEBUG(interest << " from=" << ingress << " suppressed");
     return;
-  }*/
+  }
 
   const fib::Entry& fibEntry = this->lookupFibwithFunction(*pitEntry, interest);
   const fib::NextHopList& nexthops = fibEntry.getNextHops();
-  for (fib::NextHopList::const_iterator it = nexthops.begin(); it != nexthops.end(); ++it) {
+  auto it = nexthops.end();
+
+  if (suppression == RetxSuppressionResult::NEW) {
+    // forward to nexthop with lowest cost except downstream
+    it = std::find_if(nexthops.begin(), nexthops.end(), [&] (const auto& nexthop) {
+      return isNextHopEligible(ingress.face, interest, nexthop, pitEntry);
+    });
+
+    if (it == nexthops.end()) {
+      NFD_LOG_DEBUG(interest << " from=" << ingress << " noNextHop");
+
+      lp::NackHeader nackHeader;
+      nackHeader.setReason(lp::NackReason::NO_ROUTE);
+      this->sendNack(pitEntry, ingress.face, nackHeader);
+
+      this->rejectPendingInterest(pitEntry);
+      return;
+    }
+
     Face& outFace = it->getFace();
+    NFD_LOG_DEBUG(interest << " from=" << ingress << " newPitEntry-to=" << outFace.getId());
     this->sendInterest(pitEntry, outFace, interest);
     return;
   }
 
-  this->rejectPendingInterest(pitEntry);
+  // find an unused upstream with lowest cost except downstream
+  it = std::find_if(nexthops.begin(), nexthops.end(),
+                    [&, now = time::steady_clock::now()] (const auto& nexthop) {
+                      return isNextHopEligible(ingress.face, interest, nexthop, pitEntry, true, now);
+                    });
+
+  if (it != nexthops.end()) {
+    Face& outFace = it->getFace();
+    this->sendInterest(pitEntry, outFace, interest);
+    NFD_LOG_DEBUG(interest << " from=" << ingress << " retransmit-unused-to=" << outFace.getId());
+    return;
+  }
+
+  // find an eligible upstream that is used earliest
+  it = findEligibleNextHopWithEarliestOutRecord(ingress.face, interest, nexthops, pitEntry);
+  if (it == nexthops.end()) {
+    NFD_LOG_DEBUG(interest << " from=" << ingress << " retransmitNoNextHop");
+  }
+  else {
+    Face& outFace = it->getFace();
+    this->sendInterest(pitEntry, outFace, interest);
+    NFD_LOG_DEBUG(interest << " from=" << ingress << " retransmit-retry-to=" << outFace.getId());
+  }
+}
+
+void
+FunctionChainStrategy::afterReceiveNack(const FaceEndpoint& ingress, const lp::Nack& nack,
+                                    const shared_ptr<pit::Entry>& pitEntry)
+{
+  this->processNack(ingress.face, nack, pitEntry);
 }
 
 const fib::Entry&
