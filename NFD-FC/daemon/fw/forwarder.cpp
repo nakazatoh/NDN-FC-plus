@@ -183,7 +183,7 @@ void
 Forwarder::onContentStoreMiss(const FaceEndpoint& ingress,
                               const shared_ptr<pit::Entry>& pitEntry, const Interest& interest)
 {
-  NFD_LOG_DEBUG("onContentStoreMiss interest=" << *(interest.getNameFunction());
+  NFD_LOG_DEBUG("onContentStoreMiss interest=" << *(interest.getNameFunction()));
   ++m_counters.nCsMisses;
 
   // insert in-record

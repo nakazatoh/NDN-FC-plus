@@ -25,10 +25,12 @@
 
 #include "functionchain-strategy.hpp"
 #include "algorithm.hpp"
+#include "common/logger.hpp"
 
 namespace nfd {
 namespace fw {
 
+NFD_LOG_INIT(FunctionStrategy);
 NFD_REGISTER_STRATEGY(FunctionChainStrategy);
 
 FunctionChainStrategy::FunctionChainStrategy(Forwarder& forwarder, const Name& name)

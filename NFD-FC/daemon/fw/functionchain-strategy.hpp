@@ -34,7 +34,7 @@ namespace nfd {
 namespace fw {
 
 class FunctionChainStrategy : public Strategy
-                        , public ProcessNackTraits<BestRouteStrategy>
+                        , public ProcessNackTraits<FunctionChainStrategy>
 {
 public:
   explicit
@@ -44,7 +44,7 @@ public:
   getStrategyName();
 
   void
-  afterReceiveInterest(const Face& inFace, const Interest& interest,
+  afterReceiveInterest(const FaceEndpoint& ingress, const Interest& interest,
                        const shared_ptr<pit::Entry>& pitEntry) override;
 
   void
