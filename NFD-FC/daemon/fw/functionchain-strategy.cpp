@@ -30,8 +30,11 @@
 namespace nfd {
 namespace fw {
 
-NFD_LOG_INIT(FunctionStrategy);
+NFD_LOG_INIT(FunctionChainStrategy);
 NFD_REGISTER_STRATEGY(FunctionChainStrategy);
+
+const time::milliseconds FunctionChainStrategy::RETX_SUPPRESSION_INITIAL(10);
+const time::milliseconds FunctionChainStrategy::RETX_SUPPRESSION_MAX(250);
 
 FunctionChainStrategy::FunctionChainStrategy(Forwarder& forwarder, const Name& name)
   : Strategy(forwarder)
