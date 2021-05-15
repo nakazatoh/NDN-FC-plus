@@ -29,7 +29,7 @@
 namespace nfd {
 namespace cs {
 
-NFD_LOG_INIT("CSEntry");  
+NFD_LOG_INIT(CSEntry);
 
 Entry::Entry(shared_ptr<const Data> data, bool isUnsolicited)
   : m_data(std::move(data))
