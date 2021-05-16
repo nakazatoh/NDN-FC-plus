@@ -25,7 +25,7 @@
 #include "ndn-cxx/delegation-list.hpp"
 #include "ndn-cxx/detail/packet-base.hpp"
 #include "ndn-cxx/name.hpp"
-#include "ndn-cxx/function.hpp"
+// #include "ndn-cxx/function.hpp"
 #include "ndn-cxx/security/security-common.hpp"
 #include "ndn-cxx/signature-info.hpp"
 #include "ndn-cxx/util/string-helper.hpp"
@@ -193,14 +193,14 @@ public: // element access
   Interest&
   setName(const Name& name);
 
-  const Function&
+  const Name&
   getFunction() const
   {
     return m_function;
   }
 
   void
-  setFunction(const Function& function) const
+  setFunction(const Name& function) const
   {
     m_function = function;
     m_wire.reset();
@@ -536,7 +536,7 @@ private:
   static bool s_autoCheckParametersDigest;
 
   Name m_name;
-  mutable Function m_function;
+  mutable Name m_function;
   DelegationList m_forwardingHint;
   mutable optional<Nonce> m_nonce;
   time::milliseconds m_interestLifetime;
