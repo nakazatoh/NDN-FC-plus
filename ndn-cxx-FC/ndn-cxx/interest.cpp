@@ -188,7 +188,7 @@ Interest::wireDecode(const Block& wire)
   }
   m_name = std::move(tempName);
 
-  if (++element == m_wire.element_end() || element->type() != tlv::Name) {
+  if (++element == m_wire.elements_end() || element->type() != tlv::Name) {
     NDN_THROW(Error("Function element is missing or out of order"));
   }
   Name tempFunction(*element);
