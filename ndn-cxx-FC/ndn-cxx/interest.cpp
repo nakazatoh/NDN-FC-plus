@@ -98,6 +98,9 @@ Interest::wireEncode(EncodingImpl<TAG>& encoder) const
     totalLength += encoder.prependByteArrayBlock(tlv::HopLimit, &*m_hopLimit, 1);
   }
 
+  //Function
+  totalLength += getFunction().wireEncode(encoder);
+
   // InterestLifetime
   if (getInterestLifetime() != DEFAULT_INTEREST_LIFETIME) {
     totalLength += prependNonNegativeIntegerBlock(encoder, tlv::InterestLifetime,
@@ -123,9 +126,6 @@ Interest::wireEncode(EncodingImpl<TAG>& encoder) const
   if (getCanBePrefix()) {
     totalLength += prependEmptyBlock(encoder, tlv::CanBePrefix);
   }
-
-  //Function
-  totalLength += getFunction().wireEncode(encoder);
 
   // Name
   totalLength += getName().wireEncode(encoder);
@@ -188,12 +188,6 @@ Interest::wireDecode(const Block& wire)
   }
   m_name = std::move(tempName);
 
-  if (++element == m_wire.element_end() || element->type() != tlv::Name) {
-    NDN_THROW(Error("Function element is missing or out of order"));
-  }
-  Name tempFunction(*element);
-  m_function = std::move(tempFunction);
-
   m_canBePrefix = m_mustBeFresh = false;
   m_forwardingHint = {};
   m_nonce.reset();
@@ -254,24 +248,32 @@ Interest::wireDecode(const Block& wire)
         lastElement = 6;
         break;
       }
-      case tlv::HopLimit: {
+      case tlv::Function: {
         if (lastElement >= 7) {
+          NDN_THROW(Error("Function element is out of order"));
+        }
+        m_function.wireDecode(*element);
+        lastElement = 7;
+        break;
+      }
+      case tlv::HopLimit: {
+        if (lastElement >= 8) {
           break; // HopLimit is non-critical, ignore out-of-order appearance
         }
         if (element->value_size() != 1) {
           NDN_THROW(Error("HopLimit element is malformed"));
         }
         m_hopLimit = *element->value();
-        lastElement = 7;
+        lastElement = 8;
         break;
       }
       case tlv::ApplicationParameters: {
-        if (lastElement >= 8) {
+        if (lastElement >= 9) {
           break; // ApplicationParameters is non-critical, ignore out-of-order appearance
         }
         BOOST_ASSERT(!hasApplicationParameters());
         m_parameters.push_back(*element);
-        lastElement = 8;
+        lastElement = 9;
         break;
       }
       default: { // unrecognized element
