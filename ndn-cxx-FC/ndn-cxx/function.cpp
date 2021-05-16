@@ -30,7 +30,6 @@
 #include "util/time.hpp"
 
 #include <sstream>
-#include <boost/algorithm/string/trim.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/range/adaptor/reversed.hpp>
 #include <boost/range/concepts.hpp>
@@ -71,7 +70,6 @@ Function::Function(const char* uri)
 
 Function::Function(std::string uri)
 {
-  boost::algorithm::trim(uri);
   if (uri.empty())
     return;
 
@@ -82,7 +80,7 @@ Function::Function(std::string uri)
     if (iFirstSlash == std::string::npos || iColon < iFirstSlash) {
       // Omit the leading protocol such as ndn:
       uri.erase(0, iColon + 1);
-      boost::algorithm::trim(uri);
+      //boost::algorithm::trim(uri);
     }
   }
 
@@ -96,12 +94,10 @@ Function::Function(std::string uri)
         return;
       else {
         uri.erase(0, iAfterAuthority + 1);
-        boost::algorithm::trim(uri);
       }
     }
     else {
       uri.erase(0, 1);
-      boost::algorithm::trim(uri);
     }
   }
 
@@ -116,14 +112,6 @@ Function::Function(std::string uri)
     append(Component::fromEscapedString(&uri[0], iComponentStart, iComponentEnd));
     iComponentStart = iComponentEnd + 1;
   }
-}
-
-std::string
-Function::toUri() const
-{
-  std::ostringstream os;
-  os << *this;
-  return os.str();
 }
 
 template<encoding::Tag TAG>
@@ -164,7 +152,7 @@ void
 Function::wireDecode(const Block& wire)
 {
   if (wire.type() != tlv::Function)
-    BOOST_THROW_EXCEPTION(tlv::Error("Unexpected TLV type when decoding Function"));
+    NDN_THROW(tlv::Error("Function", wire.type()));
 
   m_wire = wire;
   m_wire.parse();
@@ -185,11 +173,11 @@ const name::Component&
 Function::at(ssize_t i) const
 {
   if (i < 0) {
-    i = size() + i;
+    i += static_cast<ssize_t>(size());
   }
 
   if (i < 0 || static_cast<size_t>(i) >= size()) {
-    BOOST_THROW_EXCEPTION(Error("Requested component does not exist (out of bounds)"));
+    NDN_THROW(Error("Requested component does not exist (out of bounds)"));
   }
 
   return reinterpret_cast<const Component&>(m_wire.elements()[i]);
@@ -200,13 +188,16 @@ Function::getSubFunction(ssize_t iStartComponent, size_t nComponents) const
 {
   PartialFunction result;
 
-  ssize_t iStart = iStartComponent < 0 ? this->size() + iStartComponent : iStartComponent;
-  size_t iEnd = this->size();
 
-  iStart = std::max(iStart, static_cast<ssize_t>(0));
+  if (iStartComponent < 0)
+    iStartComponent += static_cast<ssize_t>(size());
+  size_t iStart = iStartComponent < 0 ? 0 : static_cast<size_t>(iStartComponent);
+  size_t iEnd = size();
+
+  // iStart = std::max(iStart, static_cast<ssize_t>(0));
 
   if (nComponents != npos)
-    iEnd = std::min(this->size(), iStart + nComponents);
+    iEnd = std::min(size(), iStart + nComponents);
 
   for (size_t i = iStart; i < iEnd; ++i)
     result.append(at(i));
@@ -217,15 +208,39 @@ Function::getSubFunction(ssize_t iStartComponent, size_t nComponents) const
 // ---- modifiers ----
 
 Function&
-Function::appendVersion()
+Function::set(ssize_t i, const Component& component)
 {
-  return appendVersion(time::toUnixTimestamp(time::system_clock::now()).count());
+  if (i < 0) {
+    i += static_cast<ssize_t>(size());
+  }
+
+  const_cast<Block::element_container&>(m_wire.elements())[i] = component;
+  m_wire.resetWire();
+  return *this;
 }
 
 Function&
-Function::appendTimestamp()
+Function::set(ssize_t i, Component&& component)
 {
-  return appendTimestamp(time::system_clock::now());
+  if (i < 0) {
+    i += static_cast<ssize_t>(size());
+  }
+
+  const_cast<Block::element_container&>(m_wire.elements())[i] = std::move(component);
+  m_wire.resetWire();
+  return *this;
+}
+
+Function&
+Function::appendVersion(optional<uint64_t> version)
+{
+  return append(Component::fromVersion(version.value_or(time::toUnixTimestamp(time::system_clock::now()).count())));
+}
+
+Function&
+Function::appendTimestamp(optional<time::system_clock::TimePoint> timestamp)
+{
+  return append(Component::fromTimestamp(timestamp.value_or(time::system_clock::now())));
 }
 
 Function&
@@ -241,16 +256,45 @@ Function::append(const PartialFunction& name)
   return *this;
 }
 
+static constexpr uint8_t SHA256_OF_EMPTY_STRING[] = {
+  0xe3, 0xb0, 0xc4, 0x42, 0x98, 0xfc, 0x1c, 0x14,
+  0x9a, 0xfb, 0xf4, 0xc8, 0x99, 0x6f, 0xb9, 0x24,
+  0x27, 0xae, 0x41, 0xe4, 0x64, 0x9b, 0x93, 0x4c,
+  0xa4, 0x95, 0x99, 0x1b, 0x78, 0x52, 0xb8, 0x55,
+};
+
+Function&
+Function::appendParametersSha256DigestPlaceholder()
+{
+  static const Component placeholder(tlv::ParametersSha256DigestComponent,
+                                     SHA256_OF_EMPTY_STRING, sizeof(SHA256_OF_EMPTY_STRING));
+  return append(placeholder);
+}
+
+void
+Function::erase(ssize_t i)
+{
+  if (i < 0) {
+    i += static_cast<ssize_t>(size());
+  }
+
+  m_wire.erase(m_wire.elements_begin() + i);
+}
+
+void
+Function::clear()
+{
+  m_wire = Block(tlv::Name);
+}
+
 // ---- algorithms ----
 
 Function
 Function::getSuccessor() const
 {
   if (empty()) {
-    static uint8_t firstValue[] {0};
-    Function firstFunction;
-    firstFunction.append(firstValue, 1);
-    return firstFunction;
+    static const Function n("/sha256digest=0000000000000000000000000000000000000000000000000000000000000000");
+    return n;
   }
 
   return getPrefix(-1).append(get(-1).getSuccessor());
@@ -303,22 +347,31 @@ Function::compare(size_t pos1, size_t count1, const Function& other, size_t pos2
   return count1 - count2;
 }
 
-// ---- stream operators ----
+// ---- URI representation ----
 
-std::ostream&
-operator<<(std::ostream& os, const Function& name)
+void
+Function::toUri(std::ostream& os, name::UriFormat format) const
 {
-  if (name.empty()) {
+  if (empty()) {
     os << "/";
+    return;
   }
-  else {
-    for (const auto& component : name) {
-      os << "/";
-      component.toUri(os);
-    }
+
+  for (const auto& component : *this) {
+    os << "/";
+    component.toUri(os, format);
   }
-  return os;
 }
+
+std::string
+Function::toUri(name::UriFormat format) const
+{
+  std::ostringstream os;
+  toUri(os, format);
+  return os.str();
+}
+
+// ---- stream operators ----
 
 std::istream&
 operator>>(std::istream& is, Function& name)
