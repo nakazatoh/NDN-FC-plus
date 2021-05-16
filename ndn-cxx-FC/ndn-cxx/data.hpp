@@ -26,7 +26,7 @@
 #include "ndn-cxx/encoding/block.hpp"
 #include "ndn-cxx/meta-info.hpp"
 #include "ndn-cxx/name.hpp"
-// #include "ndn-cxx/function.hpp"
+#include "ndn-cxx/function.hpp"
 #include "ndn-cxx/security/security-common.hpp"
 #include "ndn-cxx/signature-info.hpp"
 
@@ -133,14 +133,14 @@ public: // Data fields
   Data&
   setName(const Name& name);
 
-  const Name&
+  const Function&
   getFunction() const
   {
     return m_function;
   }
 
   void
-  setFunction(const Name& function) const
+  setFunction(const Function& function) const
   {
     m_function = function;
     m_wire.reset();
@@ -336,7 +336,7 @@ protected:
 
 private:
   Name m_name;
-  mutable Name m_function;
+  mutable Function m_function;
   MetaInfo m_metaInfo;
   mutable Block m_content;
   SignatureInfo m_signatureInfo;
