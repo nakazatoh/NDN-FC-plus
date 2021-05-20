@@ -536,7 +536,7 @@ private:
   static bool s_autoCheckParametersDigest;
 
   Name m_name;
-  mutable Name m_function("/");
+  mutable Name m_function;
   DelegationList m_forwardingHint;
   mutable optional<Nonce> m_nonce;
   time::milliseconds m_interestLifetime;
