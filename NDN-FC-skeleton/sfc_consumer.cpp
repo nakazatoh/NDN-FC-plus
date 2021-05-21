@@ -29,7 +29,7 @@ namespace ndn {
 namespace sfc {
 
 
-  Consumer::Consumer(Name& contentName, Function& funcName, Face& face, const Options& opts)
+  Consumer::Consumer(Name& contentName, Name& funcName, Face& face, const Options& opts)
     :m_contentName(contentName)
     ,m_funcName(funcName)
     ,m_face(face)
@@ -65,7 +65,7 @@ namespace sfc {
       std::cout << "Final Block No.: " << data.getFinalBlock()->toSegment() << std::endl;
     }
 
-    Function executedFunction(data.getFunction());
+    Name executedFunction(data.getFunction());
 
     //Add Segments to Buffer
     if (m_options.isVerbose)
@@ -298,7 +298,7 @@ namespace sfc {
   try {
     Name contentName(prefix);
     Face face;
-    Function functionName(funcName);
+    Name functionName(funcName);
     Consumer cons(contentName, functionName, face, opts);
     cons.run();
   }
