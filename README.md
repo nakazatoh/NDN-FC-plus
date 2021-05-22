@@ -88,3 +88,9 @@ may need to be applyed in the computer.
 Before running the programs in NDN-FC-skeleton, NFD-FC program must be running by `nfd-start` commnand 
 on each of the computers to run sfc_producer, sfc_consumer, and sfc_function.  Also, connections 
 among NFD-FC must be properly configured, e.g., *creating faces*, *setting routing information*, etc. by means of *nfdc* commnads.
+
+## Reference
+[1] Yohei Kumamoto, Hiroki Yoshii, and Hidenori Nakazato. Real-world implementation of function chaining in Named Data Networking for IoT environment. In 2020 IEEE ComSoc International Communications Quality and Reliability Workshop (CQR), May 2020.
+
+
+[2] Yohei Kumamoto and Hidenori Nakazato. Implementation of NDN function chain- ing using caching for IoT environments. In Proceedings of the Workshop on Cloud Continuum Services for Smart IoT Systems, CCIoT ’20, pp. 20–25, New York, NY, USA, 2020. Association for Computing Machinery.
