@@ -137,7 +137,7 @@ FunctionChainStrategy::lookupFibwithFunction(const pit::Entry& pitEntry, const I
   const Fib& fib = m_forwarder.getFib();
 
   if(interest.hasFunction()){
-    ndn::Name funcName = interest.getFunction();
+    ndn::Function funcName = interest.getFunction();
     const fib::Entry& fibEntry = fib.findLongestPrefixMatch(Name(funcName.toUri()));
     return fibEntry;
   }
