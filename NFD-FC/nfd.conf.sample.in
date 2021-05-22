@@ -61,7 +61,8 @@ tables
   ;   <prefix> <strategy>
   strategy_choice
   {
-    /               /localhost/nfd/strategy/best-route
+    ; /               /localhost/nfd/strategy/best-route
+    /               /localhost/nfd/strategy/function-chain
     /localhost      /localhost/nfd/strategy/multicast
     /localhost/nfd  /localhost/nfd/strategy/best-route
     /ndn/broadcast  /localhost/nfd/strategy/multicast
