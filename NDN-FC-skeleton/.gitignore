@@ -3,5 +3,5 @@
 .waf3-*
 .lock*
 /build
-!build/clientyolo.py
+!/build/clientyolo.py
 .vscode
