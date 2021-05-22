@@ -33,6 +33,7 @@ static_assert(std::is_base_of<tlv::Error, Data::Error>::value,
 
 Data::Data(const Name& name)
   : m_name(name)
+  , m_function(Name("/"))
 {
 }
 

@@ -34,28 +34,32 @@ namespace sfc {
     ,m_face(face)
     ,m_keyChain(keyChain)
     ,m_options(opts)
-  {}
+  {
+    if (m_options.isVerbose)
+      std::cout << "Func::Func funcName:" << funcName << std::endl;
+  }
 
   void
   Func::run()
   {
-    m_face.setInterestFilter(m_funcName,
-                             bind(&Func::onInterest, this, _1, _2),
-                             ndn::RegisterPrefixSuccessCallback(),
-                             bind(&Func::onRegisterFailed, this, _1, _2));
+    if (m_options.isVerbose)
+      std::cout << "Func::run" << std::endl;
+    InterestFilter iFilter(m_funcName);
+    m_face.setInterestFilter(iFilter,
+                             [this] (auto&&, const auto& interest) { this->onInterest(interest); },
+                             [this] (auto&&) { ndn::RegisterPrefixSuccessCallback(); },
+                             [this] (const auto& prefix, const auto& reason) { this->onRegisterFailed(prefix, reason); });
 
     m_face.processEvents();
   }
  
   void
-  Func::onInterest(const ndn::InterestFilter& filter, const Interest& interest)
+  Func::onInterest(const Interest& interest)
   {
     if (!m_options.isQuiet) {
       std::cout << "<< Interest: " << interest.getName().get(-1).toSegment() << std::endl;
       std::cout << "--------------------------------------------" << std::endl;
     }
-    interest.removeHeadFunction();
-    interest.refreshNonce();
 
     uint64_t segment = interest.getName().get(-1).toSegment();
     m_interestSegmentCounter.insert(segment);
@@ -72,7 +76,10 @@ namespace sfc {
       }
     }
     else { // segment == 0
-      m_face.expressInterest(interest,
+      Interest newInterest(interest);
+      newInterest.removeHeadFunction();
+      newInterest.refreshNonce();
+      m_face.expressInterest(newInterest,
                               bind(&Func::onData, this, _1, _2),
                               bind(&Func::onNack, this, _1, _2),
                               bind(&Func::onTimeout, this, _1));
@@ -90,7 +97,7 @@ namespace sfc {
       std::cout << "Final Block No.: " << data.getFinalBlock()->toSegment() << std::endl;
     }
 
-    Function executedFunction(data.getFunction());
+    Name executedFunction(data.getFunction());
 
     //Add Segments to Buffer
     if (m_options.isVerbose)
@@ -135,7 +142,7 @@ namespace sfc {
 
     //    if(data.getName().get(-1).toSegment() == m_finalBlockNumber)
     if (m_receiveBuffer.size() == m_incomingFinalBlockNumber + 1) {
-        Function executedFunction(data.getFunction());
+        Name executedFunction(data.getFunction());
 
         reassembleSegments();
         std::string outputFilename = data.getName().get(-2).toUri(); //"test.png"
@@ -227,7 +234,7 @@ namespace sfc {
 
   /************************DATA SEGMENTATION****************************************/
   void
-  Func::populateStore(std::string& loadFilename, Function& executedFunction)
+  Func::populateStore(std::string& loadFilename, Name& executedFunction)
   {
     if (!m_options.isQuiet)
       std::cout << "Func::populateStore: filename: " << loadFilename << " executedFunction: " << executedFunction << std::endl;
@@ -238,7 +245,7 @@ namespace sfc {
     size_t bytesOccupiedByName = nameOnWire.size();
 
 
-    Function funcname(m_funcName.toUri());
+    Name funcname(m_funcName.toUri());
     funcname.append(executedFunction);
     Block funcnameOnWire = funcname.wireEncode();
     size_t bytesOccupiedByFuncName = funcnameOnWire.size();
@@ -327,7 +334,7 @@ namespace sfc {
   }
 
   void
-  Func::onRegisterFailed(const Name& prefix, const std::string& reason)
+  Func::onRegisterFailed(const ndn::Name& prefix, const std::string& reason)
   {
     std::cerr << "ERROR: Failed to register prefix \""
               << prefix << "\" in local hub's daemon (" << reason << ")"

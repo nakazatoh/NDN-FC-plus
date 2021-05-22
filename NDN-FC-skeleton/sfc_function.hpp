@@ -38,7 +38,7 @@
 #include <ndn-cxx/interest.hpp>
 #include <ndn-cxx/data.hpp>
 #include <ndn-cxx/name.hpp>
-#include <ndn-cxx/function.hpp>
+//#include <ndn-cxx/function.hpp>
 #include <ndn-cxx/encoding/block.hpp>
 #include <ndn-cxx/security/key-chain.hpp>
 #include <ndn-cxx/security/signing-info.hpp>
@@ -95,7 +95,7 @@ private:
    * @brief Respond with the requested segment of content
    */
   void
-  onInterest(const ndn::InterestFilter& filter, const Interest& interest);
+  onInterest(const Interest& interest);
 
   void
   onData(const Interest& interest, const Data& data);
@@ -120,7 +120,7 @@ private:
    * @return Number of data packets contained in the store after the operation
    */
   void
-  populateStore(std::string& loadFilename, Function& executedFunction);
+  populateStore(std::string& loadFilename, Name& executedFunction);
 
   void
   onNack(const Interest& interest, const lp::Nack& nack);
@@ -129,7 +129,7 @@ private:
   onTimeout(const Interest& interest);
 
   void
-  onRegisterFailed(const Name& prefix, const std::string& reason);
+  onRegisterFailed(const ndn::Name& prefix, const std::string& reason);
 
 private:
   unique_ptr<Name>

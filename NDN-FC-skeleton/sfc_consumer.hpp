@@ -38,7 +38,7 @@
 #include <ndn-cxx/interest.hpp>
 #include <ndn-cxx/data.hpp>
 #include <ndn-cxx/name.hpp>
-#include <ndn-cxx/function.hpp>
+//#include <ndn-cxx/function.hpp>
 #include <ndn-cxx/encoding/block.hpp>
 #include <ndn-cxx/security/key-chain.hpp>
 #include <ndn-cxx/security/signing-info.hpp>
@@ -74,7 +74,7 @@ public:
   /**
    * @brief Create the network processing part of function execution
    */
-  Consumer(Name& contentName, Function& funcName, Face& face, const Options& opts);
+  Consumer(Name& contentName, Name& funcName, Face& face, const Options& opts);
     
 
   /**
@@ -123,7 +123,7 @@ private:
 
 //  Name m_versionedPrefix;
   Name& m_contentName;
-  Function& m_funcName;
+  Name& m_funcName;
   Face& m_face;
   const Options m_options;
 

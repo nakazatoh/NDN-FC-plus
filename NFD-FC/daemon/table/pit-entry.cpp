@@ -51,11 +51,13 @@ Entry::canMatch(const Interest& interest, size_t nEqualNameComps) const
 bool
 Entry::canMatchWFunction(const Interest& interest, size_t nEqualNameComps) const
 {
-  BOOST_ASSERT(m_interest->getNameFunction()->compare(0, nEqualNameComps,
-                                             *(interest.getNameFunction()), 0, nEqualNameComps) == 0);
+  Name entryName(*(m_interest->getNameFunction()));
+  Name interestName(*(interest.getNameFunction()));
+  BOOST_ASSERT(entryName.compare(0, nEqualNameComps,
+                                             interestName, 0, nEqualNameComps) == 0);
 
-  return m_interest->getNameFunction()->compare(nEqualNameComps, Name::npos,
-                                       *(interest.getNameFunction()), nEqualNameComps) == 0 &&
+  return entryName.compare(nEqualNameComps, Name::npos,
+                                       interestName, nEqualNameComps) == 0 &&
          m_interest->getCanBePrefix() == interest.getCanBePrefix() &&
          m_interest->getMustBeFresh() == interest.getMustBeFresh();
   /// \todo #3162 match Link field

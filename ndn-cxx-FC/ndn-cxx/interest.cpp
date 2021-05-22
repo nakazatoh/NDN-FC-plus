@@ -44,6 +44,7 @@ boost::logic::tribool Interest::s_defaultCanBePrefix = boost::logic::indetermina
 bool Interest::s_autoCheckParametersDigest = true;
 
 Interest::Interest(const Name& name, time::milliseconds lifetime)
+  : m_function(Name("/"))
 {
   setName(name);
   setInterestLifetime(lifetime);
