@@ -1,5 +1,5 @@
 # NDN-FC-plus
-NDN-FC-plus implements what is proposed in [[1]](https://www.nz.comm.waseda.ac.jp/en/publication/#KumYosNak2020Real-World) 
+NDN-FC-plus implements what is proposed in [[1]](https://www.nz.comm.waseda.ac.jp/en/publication#KumYosNak2020Real-World) 
 [[2]](https://dl.acm.org/doi/10.1145/3417310.3431401).
 It is confirmed to run on Ubuntu 18.04 or 20.04.
 <br>
