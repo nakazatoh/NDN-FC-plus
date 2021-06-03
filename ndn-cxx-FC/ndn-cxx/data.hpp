@@ -26,7 +26,7 @@
 #include "ndn-cxx/encoding/block.hpp"
 #include "ndn-cxx/meta-info.hpp"
 #include "ndn-cxx/name.hpp"
-#include "ndn-cxx/function.hpp"
+//#include "ndn-cxx/function.hpp"
 #include "ndn-cxx/security/security-common.hpp"
 #include "ndn-cxx/signature-info.hpp"
 
