@@ -4,10 +4,10 @@ VERSION='0.0.1'
 APPNAME='ndn-example'
 
 def options(opt):
-    opt.load('compiler_cxx default-compiler-flags')
+    opt.load('compiler_cxx')
 
 def configure(conf):
-    conf.load("compiler_cxx default-compiler-flags")
+    conf.load('compiler_cxx')
 
     conf.check_cfg(package='libndn-cxx', args=['--cflags', '--libs'],
                    uselib_store='NDN_CXX', global_define=True, mandatory=True)
@@ -15,8 +15,10 @@ def configure(conf):
     conf.check_cfg(package='python-2.7', args=['--cflags', '--libs'],
                    uselib_store='PYTHON', global_define=True, mandatory=True)
 
-    conf.check_cfg(package='Consumer-Producer-API', args=['--cflags', '--libs'],
-               uselib_store='CONSUMERPRODUCERAPI', global_define=True, mandatory=True)
+#    conf.check_cfg(package='Consumer-Producer-API', args=['--cflags', '--libs'],
+#               uselib_store='CONSUMERPRODUCERAPI', global_define=True, mandatory=True)
+
+    conf.env.append_value('cflags', ['-std=c++14'])
 
 def build (bld):
 #    bld(target='client',

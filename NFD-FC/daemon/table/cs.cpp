@@ -121,7 +121,8 @@ Cs::findImpl(const Interest& interest) const
     return m_table.end();
   }
 
-  const Name& prefix = *(interest.getNameFunction());
+  const Name prefix(*(interest.getNameFunction()));
+  NFD_LOG_DEBUG("Cs::findImpl prefix:" << prefix);
   auto range = findPrefixRange(prefix);
   auto match = std::find_if(range.first, range.second,
                             [&interest] (const auto& entry) { return entry.canSatisfy(interest); });
