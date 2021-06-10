@@ -38,7 +38,7 @@
 #include <ndn-cxx/interest.hpp>
 #include <ndn-cxx/data.hpp>
 #include <ndn-cxx/name.hpp>
-#include <ndn-cxx/function.hpp>
+//#include <ndn-cxx/function.hpp>
 #include <ndn-cxx/encoding/block.hpp>
 #include <ndn-cxx/security/key-chain.hpp>
 #include <ndn-cxx/security/signing-info.hpp>

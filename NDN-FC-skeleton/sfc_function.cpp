@@ -34,11 +34,16 @@ namespace sfc {
     ,m_face(face)
     ,m_keyChain(keyChain)
     ,m_options(opts)
-  {}
+  {
+    if (m_options.isVerbose)
+      std::cout << "Func::Func funcName:" << funcName << std::endl;
+  }
 
   void
   Func::run()
   {
+    if (m_options.isVerbose)
+      std::cout << "Func::run" << std::endl;
     InterestFilter iFilter(m_funcName);
     m_face.setInterestFilter(iFilter,
                              [this] (auto&&, const auto& interest) { this->onInterest(interest); },
