@@ -25,7 +25,10 @@
 #include "ndn-cxx/delegation-list.hpp"
 #include "ndn-cxx/detail/packet-base.hpp"
 #include "ndn-cxx/name.hpp"
+<<<<<<< HEAD
 #include "ndn-cxx/function.hpp"
+=======
+>>>>>>> 25e1eeb13ac94b83692b2e573ec7258842073f80
 #include "ndn-cxx/security/security-common.hpp"
 #include "ndn-cxx/signature-info.hpp"
 #include "ndn-cxx/util/string-helper.hpp"
