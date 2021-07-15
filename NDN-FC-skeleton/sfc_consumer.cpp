@@ -204,7 +204,7 @@ namespace sfc {
   static void
   usage (std::ostream& os, const std::string& programName, const po::options_description& desc)
   {
-    os << "Usage: " << programName << "[options] /contetn-name /function-name\n"
+    os << "Usage: " << programName << "[options] /content-name /function-name\n"
     << "\n"
     << "Apply the specified function on Data packets.\n"
     << desc;
